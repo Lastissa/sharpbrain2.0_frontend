@@ -1,0 +1,149 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:sharpbrains/utils.dart';
+
+class Homepage extends StatefulWidget {
+  const Homepage({super.key});
+
+  @override
+  State<Homepage> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  @override
+  Widget build(BuildContext context) {
+    double shortestSize = MediaQuery.of(context).size.shortestSide;
+
+    return Scaffold(
+      appBar: AppBar(toolbarHeight: 0),
+      body: Container(
+        height: devicesizeY.h,
+        width: devicesizeX.w,
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'GOOD MORNING',
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  // overflow: TextOverflow.visible,
+                  fontSize: shortestSize * 0.066,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              InkWell(
+                onTap: () => routerInstance.go('/practice'),
+                child: Container(
+                  //dashboard container
+                  padding: REdgeInsets.all(10),
+                  width: 357.w,
+                  height: 200.h,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 75, 80, 185),
+                        Color(0xFF8F94FB),
+                      ],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [Icon(Icons.person)],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      //AI mode. will be more like a chatbot interface with layover interface that can be laid over other pages aprtially with a cancel buttom
+      floatingActionButton: InkWell(
+        onTap: () => routerInstance.push('/aichat'),
+
+        child: Container(
+          width: shortestSize * 0.1,
+          height: shortestSize * 0.1,
+          decoration: BoxDecoration(
+            color: Colors.blueAccent,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Icon(Icons.chat, color: Colors.white),
+        ),
+      ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      bottomNavigationBar: customBottomNavBar(width: shortestSize),
+    );
+  }
+}
+
+//Using my own phone as example for screen size
+
+//to simpify the reusage of screenutil container
+Widget _widget({required}) {
+  //work in rpogress but not necesarily now as it does not break workfloe
+  return Container();
+}
+
+Widget customBottomNavIcon({
+  required VoidCallback onTap,
+  required IconData iconData,
+  required double size,
+}) {
+  return InkWell(
+    onTap: onTap,
+    child: Container(
+      padding: EdgeInsets.only(bottom: 0.008 * devicesizeX.w),
+      width: devicesizeX * 0.2.w,
+      color: Colors.transparent,
+      child: Icon(iconData, color: Colors.white, size: size),
+    ),
+  );
+}
+
+Widget customBottomNavBar({required double width}) {
+  return InkWell(
+    child: Container(
+      width: 200.w,
+      height: 40.h,
+      margin: EdgeInsets.only(bottom: 4, right: 4, left: 4),
+      decoration: BoxDecoration(
+        color: mainColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          customBottomNavIcon(
+            onTap: () => routerInstance.go('/homepage'),
+            iconData: Icons.home,
+            size: width * 0.08 <= 24.88 ? width * 0.08 : 24.88,
+          ),
+          //create custom database or take test/exam
+          customBottomNavIcon(
+            onTap: () => routerInstance.push('/'),
+            iconData: Icons.dashboard_customize,
+            size: width * 0.08 <= 24.88 ? width * 0.08 : 24.88,
+          ),
+          //test/exam taken history icon, will show past results and analytics(adv analysis), change your Ai name
+          customBottomNavIcon(
+            onTap: () => routerInstance.push('/'),
+            iconData: Icons.history,
+            size: width * 0.08 <= 24.88 ? width * 0.08 : 24.88,
+          ),
+          customBottomNavIcon(
+            onTap: () => routerInstance.go('/SettingPage'),
+            iconData: Icons.settings,
+            size: width * 0.08 <= 24.88 ? width * 0.08 : 24.88,
+          ),
+        ],
+      ),
+    ),
+  );
+}

@@ -1,0 +1,18 @@
+refreshpage func in aichat might later become useless cos i have make sure that the amount of user'text will never be greater than Ai reply but i will stil leave it for now
+
+
+todos;
+    25 / 01 / 2026 
+    💹* aichat - make the text in the singlechildscrollview automatically scroll to the last message once the user have sent in new message
+    * aichat - make a way to make the app faster, i noticed that with the mroe setstate i use, the app kind of seem slower, i will try to use the dispose  but for now i dont know how
+    *total project - Think of a way you can integrate the todo app note taking feature into this using some of its source 
+    * Create a history page using cubbes app
+    04/ 02 / 2026
+    * copy germini feature where the text is returned back to the controller if network issues arrises (aichat)
+
+
+currentr stuff that will be coming from the API(that will be going to the API)
+    -> AI response(user text)
+    -> list of universities and their dept in a Map form ({list of uni : [depts]})
+    -> levels in a universities
+    -> list of possible position a tutor can be called / take
