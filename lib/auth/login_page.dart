@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -27,15 +28,17 @@ class _LoginPageState extends ConsumerState<LoginPage>
   }
 
   void _submit() {
+    ref.read(loginUserName.notifier).state = _emailController.text;
+    ref.read(loginPassword.notifier).state = _passwordController.text;
+
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: wire up authentication
       notifier(
         context: context,
         duration: Duration(seconds: 2),
         bg: mainColor,
-        text: 'Logging In',
+        text: '',
       );
-      routerInstance.go('/splashscreenPostLogIn');
+      routerInstance.push('/splashscreenPostLogIn');
     }
   }
 
@@ -139,13 +142,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             height: 52,
                             child: ElevatedButton(
                               onPressed: () async {
-                                // final testing = await ref.read(
-                                //   aiChatResponse({
-                                //     "ai_name": "opeyemi",
-                                //     "message": "what is your name?",
-                                //   }).future,
-                                // );
-                                // print(testing);
                                 if (_emailController.text.toLowerCase() ==
                                         'admin' &&
                                     _passwordController.text.toLowerCase() ==
@@ -153,11 +149,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   routerInstance.push('/adminpage');
                                 }
                                 return _submit();
-                                // print(
-                                //   ref
-                                //       .read(userAITempChatHolder)['user']!
-                                //       .isEmpty,
-                                // );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
@@ -250,3 +241,10 @@ class _LoginPageState extends ConsumerState<LoginPage>
     );
   }
 }
+
+final loginUserName = StateProvider<String>((ref) {
+  return '';
+});
+final loginPassword = StateProvider<String>((ref) {
+  return '';
+});

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:sharpbrains/adminPage.dart';
@@ -42,8 +43,8 @@ final GoRouter _router = GoRouter(
       path: '/splashscreenPostLogIn',
       builder: (context, state) => Splashscreen(
         whereToGo: 'homepage',
-        textToDisplay: 'Loggin In',
-        wait: null,
+        textToDisplay: 'Verifying Password...',
+        wait: true,
       ),
     ),
     GoRoute(
@@ -258,6 +259,7 @@ void notifier({
 
       content: Center(
         child: Container(
+          margin: EdgeInsets.only(bottom: (766 * 0.1).h),
           padding: EdgeInsets.all(15),
           decoration: BoxDecoration(
             color: bg,
@@ -266,7 +268,7 @@ void notifier({
           ),
           child: Text(
             text,
-            style: TextStyle(fontSize: 10),
+            style: TextStyle(fontSize: 14.sp),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -312,8 +314,8 @@ final coursesOfferedSaved = FutureProvider<List<Map>?>((ref) async {
   } else {
     return [
       {
-        'id': 'null',
-        'name_of_uni': 'invalid',
+        'id': 'NULL',
+        'name_of_uni': 'INVALID',
         'courses_offered': [''],
       },
     ];
@@ -333,7 +335,7 @@ final jambSubjectCombinationSaved = FutureProvider<List<Map<String, dynamic>>>((
   } else {
     return [
       {
-        "uni_name": "invalid",
+        "uni_name": "INVALID",
         "course_name": "",
         "core_subjects": [""],
         "subject_combination": [""],
@@ -346,10 +348,8 @@ final aiChatResponse = FutureProvider.family((
   ref,
   Map userResponseAndAiName,
 ) async {
-  print('request starting......\n\n\n\n\n\n\n\n\n');
   try {
     final url = Uri.parse('${ref.read(backendUrl)}aichat/');
-    // print(ref.read(userAITempChatHolder).values);
     final post = await http.post(
       url,
       headers: {
@@ -365,7 +365,6 @@ final aiChatResponse = FutureProvider.family((
         ), //,work in progress, this is supposed to send the chat history to the backend so that the ai can use it to generate a more contextually relevant response, but im not sure if im doing it right, ill have to test it out and see if it works, if it doesnt work then ill have to figure out how to properly send the chat history to the backend, maybe i need to convert it to a different format or something, ill have to do some research and see how other people are doing it and try to implement it in a similar way. hopefully it works on the first try tho, that would be nice.
       }),
     );
-    print(post.statusCode);
     if (post.statusCode > 199 && post.statusCode < 300) {
       final response = await jsonDecode(post.body);
       return response;
@@ -461,18 +460,43 @@ final userLevel = StateProvider((ref) => '');
 //SECURITY PAGE
 final userPassword = StateProvider((ref) => '');
 
-
 //data to send to backend for registration
-//this will stay in registration and will be fired on post create account as a dictionary
-// print([
-//           ref.read(userSurname),
-//           ref.read(userFirstname),
-//           ref.read(userEmail),
-//           ref.read(userYearOfBirth),
-//           ref.read(userMonthOfBirth),
-//           ref.read(userDateOfBirth),
-//           ref.read(userUniversityName),
-//           ref.read(userDeptOfStudy),
-//           ref.read(userLevel),
-//           ref.read(userPassword),
-//         ]);
+final formSubmission = FutureProvider((ref) async {
+  final url = Uri.parse("${ref.read(backendUrl)}signup/");
+  final data = await http.post(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "surname": ref.read(userSurname),
+      "first_name": ref.read(userFirstname),
+      "email": ref.read(userEmail),
+      "yearOfBirth": ref.read(userYearOfBirth),
+      "monthOfBirth": ref.read(userMonthOfBirth),
+      "dateOfBirth": ref.read(userDateOfBirth),
+      "Universities_name": ref.read(userUniversityName),
+      "dept_name": ref.read(userDeptOfStudy),
+      "level": ref.read(userLevel),
+      "password": ref.read(userPassword),
+    }),
+  );
+  print(data.statusCode);
+  if (data.statusCode == 200) {
+    final response = await jsonDecode(data.body);
+    return response;
+  }
+});
+
+final userLoginCheck = FutureProvider.family((ref, Map userDetails) async {
+  final url = Uri.parse("${ref.read(backendUrl)}signup/").replace(
+    queryParameters: {
+      "email": userDetails["email"],
+      "password": userDetails["password"],
+    },
+  );
+  final response = await http.get(url);
+  if (response.statusCode == 200) {
+    final data = await jsonDecode(response.body);
+
+    return data; //a dictionary
+  }
+});

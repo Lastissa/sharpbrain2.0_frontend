@@ -46,11 +46,12 @@ class _RegistrationState extends ConsumerState<Registration> {
         break;
       case 2:
         currentKey = reg3FormkKey;
+        ref.read(userPassword.notifier).state = securityPasswordController.text;
 
         break;
       case 3:
-        ref.read(userPassword.notifier).state = securityPasswordController.text;
         currentKey = reg4FormkKey;
+
         break;
       default:
         currentKey = reg1FormkKey;
@@ -75,21 +76,34 @@ class _RegistrationState extends ConsumerState<Registration> {
           bg: mainColor,
           text: 'Creating Account...',
         );
-        notifier(
-          context: context,
-          duration: Duration(seconds: 2),
-          bg: mainColor,
-          text: 'Account Created...',
-        );
-        await Future.delayed(Duration(milliseconds: 500));
-        ref.invalidate(coursesOfferedSaved);
-        ref.invalidate(universityNameSaved);
-        ref.invalidate(jambSubjectCombinationSaved);
-        ref.invalidate(otpStatus);
-        ref.invalidate(otp);
-        ref.invalidate(otpValue);
 
-        routerInstance.go('/');
+        final c = await ref
+            .read(formSubmission.future)
+            .timeout(
+              Duration(seconds: 60),
+              onTimeout: () {
+                return {"message": "Error"};
+              },
+            );
+
+        // print(c?["message"]);
+        await Future.delayed(Duration(milliseconds: 500));
+        routerInstance.go("/");
+        if (c["message"] == "success") {
+          notifier(
+            context: context,
+            duration: Duration(seconds: 2),
+            bg: mainColor,
+            text: 'Account Created...',
+          );
+        } else {
+          notifier(
+            context: context,
+            duration: Duration(seconds: 2),
+            bg: mainColor,
+            text: 'Could not create account, please try again',
+          );
+        }
       }
     }
   }

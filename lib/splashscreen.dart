@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:sharpbrains/auth/login_page.dart';
 import 'package:sharpbrains/utils.dart';
 
 class Splashscreen extends ConsumerStatefulWidget {
@@ -29,24 +30,23 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
   final Color backGround = mainColor;
   final Color textColor = Colors.white;
   final int secondsToWait = 2;
+  bool stopRolling = false;
+  String messageToDisplayForPostLogin = 'Invalid Credential';
 
   void reroute() async {
     onFired = DateTime.now().millisecondsSinceEpoch / 1000;
-    // print(onFired);
     final whereToGo = '/${widget.whereToGo}';
     if (widget.wait == null || widget.wait == false) {
       await Future.delayed(Duration(seconds: secondsToWait));
       routerInstance.go(whereToGo);
-    } else {
-      // takingTooLong = true;
-
+    } else if (widget.whereToGo == "registration" && widget.wait == true) {
       await Future.delayed(Duration(milliseconds: 600));
       await ref
           .read(universityNameSaved.future)
           .timeout(
             Duration(seconds: 3),
             onTimeout: () => [
-              {'name_of_universities': 'invalid'},
+              {'name_of_universities': 'INVALID'},
             ],
           );
       await ref
@@ -56,7 +56,7 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
             onTimeout: () => [
               {
                 'id': 'null',
-                'name_of_uni': 'invalid',
+                'name_of_uni': 'INVALID',
                 'courses_offered': [''],
               },
             ],
@@ -67,7 +67,7 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
             Duration(seconds: 3),
             onTimeout: () => [
               {
-                "uni_name": "invalid",
+                "uni_name": "INVALID",
                 "course_name": "",
                 "subject_combination": [""],
               },
@@ -77,10 +77,11 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
       if (ref.read(coursesOfferedSaved).value == null ||
           ref.read(universityNameSaved).value == null ||
           ref.read(jambSubjectCombinationSaved) == null) {
-        routerInstance.pop();
         ref.invalidate(coursesOfferedSaved);
         ref.invalidate(universityNameSaved);
         ref.invalidate(jambSubjectCombinationSaved);
+        routerInstance.pop();
+
         notifier(
           context: context,
           duration: Duration(seconds: 2),
@@ -89,6 +90,42 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
         );
       } else {
         routerInstance.go(whereToGo);
+      }
+    } else if (widget.wait == true && widget.whereToGo == "homepage") {
+      //check password here
+      final result = await ref
+          .read(
+            userLoginCheck({
+              "email": ref.read(loginUserName),
+              "password": ref.read(loginPassword),
+            }).future,
+          )
+          .timeout(
+            Duration(seconds: 8),
+            onTimeout: () {
+              return {"message": "Network Error"};
+            },
+          );
+      // print(result.toString());
+      if (result["message"] == "success") {
+        routerInstance.go("/${widget.whereToGo}");
+        ref.invalidate(userLoginCheck);
+        // } else if (result["message"] == "timeout") {
+        //   if (mounted && stopRolling == false) {
+        //     setState(() {
+        //       stopRolling = true;
+        //       messageToDisplayForPostLogin = 'Network Error';
+        //       // print("yoo ${result}");
+        //     });
+        //   }
+      } else {
+        if (mounted && stopRolling == false) {
+          setState(() {
+            stopRolling = true;
+            messageToDisplayForPostLogin = result["message"];
+            // print("yoo ${result}");
+          });
+        }
       }
     }
   }
@@ -119,9 +156,19 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
             ),
             // Text('Sharp Brains', style: TextStyle(color: textColor)),
             const SizedBox(height: 20),
-            CircularProgressIndicator(color: Colors.white),
+            stopRolling
+                ? ElevatedButton(
+                    onPressed: () {
+                      ref.invalidate(userLoginCheck);
+                      return routerInstance.go("/login");
+                    },
+                    child: Text("Retry"),
+                  )
+                : CircularProgressIndicator(color: Colors.white),
             Text(
-              widget.textToDisplay.trim().isEmpty
+              stopRolling
+                  ? messageToDisplayForPostLogin
+                  : widget.textToDisplay.trim().isEmpty
                   ? defaultTextToDisplay
                   : widget.textToDisplay,
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),

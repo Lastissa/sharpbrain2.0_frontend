@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart';
 import 'package:sharpbrains/utils.dart';
 
 class Reg1 extends ConsumerStatefulWidget {
@@ -41,6 +42,8 @@ class _Reg1State extends ConsumerState<Reg1> {
   int year = DateTime.now().year;
   //use for knowing the limit of years to show for the dropdownmwnu NB: year != year of birth
 
+  bool startSpinning = false;
+  Timer? debounce;
   void google() {}
   @override
   Widget build(BuildContext context) {
@@ -107,16 +110,97 @@ class _Reg1State extends ConsumerState<Reg1> {
                       width: ref.watch(devicesizeX),
                     ),
                     Spacer(flex: 1),
-                    _field(
-                      controller: widget.emailController,
-                      keyboard: TextInputType.emailAddress,
-                      hint: 'Email',
-                      icon: Icons.email_outlined,
-                      validator: (v) =>
-                          (v == null || !v.toLowerCase().contains('@gmail.com'))
-                          ? 'Enter a valid email'
-                          : null,
-                      width: ref.watch(devicesizeX),
+                    // _field(
+                    //   controller: widget.emailController,
+                    //   keyboard: TextInputType.emailAddress,
+                    //   hint: 'Email',
+                    //   icon: Icons.email_outlined,
+                    //   validator: (v) {
+                    //     if (v == null ||
+                    //         !v.toLowerCase().contains('@gmail.com')) {
+                    //       return 'Enter a valid email';
+                    //     }
+                    //     //i do not want to be creating another view for judt veryfying if a user email exist, so i will just use the "no user" and "incorrect" to check if they exist and then put at the buttom
+                    //     // else()
+                    //     return null;
+                    //   },
+                    //   width: ref.watch(devicesizeX),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 0.9 * ref.read(devicesizeX).w,
+                          child: TextFormField(
+                            onChanged: (value) {
+                              if (value.contains("@gmail.com")) {
+                                if (!mounted) return;
+                                if (debounce?.isActive ?? false) return;
+                                if (!mounted) return;
+                                Timer(Duration(seconds: 1), () async {
+                                  final c = await ref.read(
+                                    userLoginCheck({
+                                      "email": value,
+                                      "password": "",
+                                    }).future,
+                                  );
+                                  if (!mounted) return;
+                                  if (c['message'] == "wrong password") {
+                                    startSpinning = true;
+
+                                    // if (mounted) {
+                                    //   Timer.periodic(Duration(seconds: 3), (
+                                    //     holder,
+                                    //   ) {
+                                    //     return notifier(
+                                    //       context: GlobalKey(),
+                                    //       duration: Duration(seconds: 5),
+                                    //       bg: mainColor,
+                                    //       text:
+                                    //           "EMAIL ALREADY EXIST, LOGIN ISTEAD",
+                                    //     );
+                                    //   });
+                                    // }
+                                  }
+                                  if (!mounted) return;
+                                  print(c);
+                                });
+                                // } else {
+                                //   setState(() {
+                                //     startSpinning = false;
+                                //   });
+                                startSpinning = false;
+                              }
+                              // print(value);
+                            },
+                            keyboardType: TextInputType.emailAddress,
+                            controller: widget.emailController,
+                            obscureText: false,
+                            validator: (v) {
+                              if (v == null ||
+                                  !v.toLowerCase().contains('@gmail.com')) {
+                                return 'Enter a valid email';
+                              }
+                              //i do not want to be creating another view for judt veryfying if a user email exist, so i will just use the "no user" and "incorrect" to check if they exist and then put at the buttom
+                              else if (startSpinning) {
+                                return 'Email already exist, Login Istead';
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              focusColor: Color(0xFFFFA001),
+
+                              hintText: 'Email',
+                              prefixIcon: Icon(Icons.email_outlined),
+                            ),
+                          ),
+                        ),
+                        //   startSpinning
+                        //       ? CircularProgressIndicator()
+                        //       : Container(
+                        //           width: 10,
+                        //           height: 20,
+                        //           color: Colors.red,
+                        //         ),
+                      ],
                     ),
                     Spacer(flex: 1),
 
@@ -339,6 +423,7 @@ class Reg2 extends ConsumerStatefulWidget {
 class _Reg2State extends ConsumerState<Reg2> {
   Key _keyForUniDropDown = UniqueKey();
   Key __keyForDeptDropDown = UniqueKey();
+  Key _keyForLevelDropDown = UniqueKey();
   bool uniDdropDownisActive = true;
   bool userIsAspirant = false;
   String? _firstSubjectChosen;
@@ -407,9 +492,12 @@ class _Reg2State extends ConsumerState<Reg2> {
       displacement: 0,
       elevation: 0,
       onRefresh: () {
+        ref.invalidate(userLevel);
+
         setState(() {
           _keyForUniDropDown = UniqueKey();
           __keyForDeptDropDown = UniqueKey();
+          _keyForLevelDropDown = UniqueKey();
           uniDdropDownisActive = true;
         });
         return Future(() async {
@@ -569,6 +657,7 @@ class _Reg2State extends ConsumerState<Reg2> {
                 ),
                 Spacer(flex: 1),
                 DropdownButtonFormField(
+                  key: _keyForLevelDropDown,
                   validator: (v) {
                     if (ref.read(userLevel).isEmpty) {
                       return 'Please select level';
@@ -974,6 +1063,7 @@ class _Reg3State extends ConsumerState<Reg3> {
                                     };
                                   },
                                 );
+                            print(ref.read(otpStatus));
                             if (ref.read(otpValue) != 0) {
                               ref.read(otpGotten.notifier).state = true;
                             }
@@ -991,7 +1081,7 @@ class _Reg3State extends ConsumerState<Reg3> {
                 ),
               ],
             ),
-            //noticed that when the user have zero internt access, the loading bar just stuck, fit with fureBuilder
+            //noticed that when the user have zero internt access, the loading bar just stuck, fix with fureBuilder
             ref.watch(onButtonPressed) &&
                     widget.isactive &&
                     !ref.watch(otpGotten)
@@ -1124,5 +1214,9 @@ final otpGotten = StateProvider<bool>((ref) {
   return false;
 });
 final onButtonPressed = StateProvider<bool>((ref) {
+  return false;
+});
+
+final reg1StartSpinning = StateProvider<bool>((ref) {
   return false;
 });
