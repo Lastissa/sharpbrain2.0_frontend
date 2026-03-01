@@ -83,6 +83,8 @@ class _SettingspageState extends ConsumerState<SettingPage> {
 
           ElevatedButton(
             onPressed: () {
+              ref.invalidate(userUniversityName);
+              ref.invalidate(userDeptOfStudy);
               ref.invalidate(userAITempChatHolder);
 
               routerInstance.go('/splashscreenSignOut');

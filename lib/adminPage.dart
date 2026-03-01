@@ -14,6 +14,7 @@ class _AdminpageState extends ConsumerState<Adminpage> {
   final _controller1 = TextEditingController();
   final _formController = GlobalKey<FormState>();
   bool updated = false;
+  String url = '';
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +45,7 @@ class _AdminpageState extends ConsumerState<Adminpage> {
                         setState(() {
                           updated = true;
                         });
+                        ref.read(backendUrl.notifier).state = _controller1.text;
                         return null;
                       }
                     },
@@ -71,7 +73,7 @@ class _AdminpageState extends ConsumerState<Adminpage> {
               ),
             ],
           ),
-          updated ? Text('Urls is now ${_controller1.text}') : SizedBox(),
+          updated ? Text('Urls is now ${ref.read(backendUrl)}') : SizedBox(),
         ],
       ),
     );

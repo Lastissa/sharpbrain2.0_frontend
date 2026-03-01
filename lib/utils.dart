@@ -295,19 +295,22 @@ final universityNameSaved = FutureProvider((ref) async {
 
   if (response.statusCode == 200) {
     return uniNames;
-  } else {
-    return [
-      //since GET ony respond 200 as a good to go, everything else is useless
-      {'name_of_universities': 'invalid'},
-    ];
   }
+  //  else {
+  //   return [
+  //     //since GET ony respond 200 as a good to go, everything else is useless
+  //     {'name_of_universities': 'invalid'},
+  //   ];
+  // }
 });
 
-final coursesOfferedSaved = FutureProvider<List<Map>?>((ref) async {
+final coursesOfferedSaved = FutureProvider<List<Map<String, dynamic>>?>((
+  ref,
+) async {
   final url = Uri.parse('${ref.read(backendUrl)}course_names/');
   final response = await http.get(url);
   final List temp = jsonDecode(response.body);
-  final courses = temp.map((items) => items as Map<dynamic, dynamic>).toList();
+  final courses = temp.map((items) => items as Map<String, dynamic>).toList();
 
   if (response.statusCode == 200) {
     return courses;
@@ -498,5 +501,66 @@ final userLoginCheck = FutureProvider.family((ref, Map userDetails) async {
     final data = await jsonDecode(response.body);
 
     return data; //a dictionary
+  } else {
+    return {
+      "message": "app error",
+      "yearOfBirth": 0,
+      "monthOfBirth": null,
+      "dateOfBirth": null,
+      "Universities_name": "invalid",
+      "dept_name": "invalid",
+      "level": "invalid",
+    };
   }
+});
+
+final materials = FutureProvider.family((ref, String text) async {
+  //i am sure i will still edit this later using the dio that this guy said so i cannot rewlly write code for this one now
+  // try {
+  //   final url = Uri.parse("${ref.read((backendUrl))}/material/");
+  //   final urlWithQuery = url.replace(queryParameters: {"file_name": text});
+  //   final response = await http.get(urlWithQuery);
+  //   if (response.statusCode == 200) {
+  //     final data = await jsonDecode(response.body);
+  //     return data;
+  //   }
+  //   return null;
+  // } catch (e) {
+  //   return e.toString();
+  // }
+});
+
+final CoursesForEachDept = FutureProvider.family((
+  ref,
+  Map uniAndDeptName,
+) async {
+  final url = Uri.parse("${ref.read(backendUrl)}/courses_for_each_dept/")
+      .replace(
+        queryParameters: {
+          "uni_name": uniAndDeptName["uni_name"],
+          "dept_name": uniAndDeptName["dept_name"],
+        },
+      );
+  final response = await http.get(url);
+  if (response.statusCode == 200) {
+    final data = await jsonDecode(response.body);
+    return data;
+  }
+  return {
+    "dept_name": "invalid",
+    "uni_name": "Invalid",
+    "first_semester": [],
+    "second_semester": [],
+  };
+});
+final CoursesForEachDeptSaved = StateProvider<Map<String, dynamic>>((ref) {
+  return {
+    "uni_name": "invalid",
+    "dept_name": "invalid",
+    "first_semester": ["invalid"],
+    "second_semester": [],
+  };
+});
+final currentSemesterTracker = StateProvider<String>((ref) {
+  return "first"; //or second
 });

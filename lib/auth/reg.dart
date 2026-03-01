@@ -531,7 +531,7 @@ class _Reg2State extends ConsumerState<Reg2> {
                 Spacer(flex: 1),
 
                 universityNameWatcher.when(
-                  data: (List<Map<String, dynamic>> data) {
+                  data: (data) {
                     return DropdownButtonFormField(
                       key: _keyForUniDropDown,
                       validator: (v) {
@@ -549,7 +549,7 @@ class _Reg2State extends ConsumerState<Reg2> {
                       ),
                       // initialValue: ref.read(userUniversityName),
                       items: List.generate(
-                        data.length,
+                        data!.length,
                         (index) => DropdownMenuItem(
                           value: data[index]['name_of_universities'],
                           child: Text(
@@ -1214,9 +1214,5 @@ final otpGotten = StateProvider<bool>((ref) {
   return false;
 });
 final onButtonPressed = StateProvider<bool>((ref) {
-  return false;
-});
-
-final reg1StartSpinning = StateProvider<bool>((ref) {
   return false;
 });

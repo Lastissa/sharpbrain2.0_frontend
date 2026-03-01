@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sharpbrains/post-auth/databasePage/databasepage.dart';
@@ -23,15 +24,31 @@ class _HomepageState extends ConsumerState<Homepage> {
     Historypage(),
     SettingPage(),
   ];
-
+  DateTime? _backPressedCount;
   @override
   Widget build(BuildContext context) {
     double shortestSize = MediaQuery.of(context).size.shortestSide;
 
     return PopScope(
       canPop: false,
+      onPopInvokedWithResult: ((didPop, holder) {
+        if (didPop) return;
+        if (DateTime.now().difference(_backPressedCount ?? DateTime.now()) >
+                Duration(seconds: 2) ||
+            _backPressedCount == null) {
+          _backPressedCount = DateTime.now();
+          return notifier(
+            context: context,
+            bg: mainColor,
+            text: 'Press again to Quit',
+            duration: Duration(seconds: 2),
+          );
+        } else {
+          SystemNavigator.pop();
+        }
+      }),
       child: Scaffold(
-        appBar: AppBar(toolbarHeight: 0),
+        appBar: AppBar(toolbarHeight: 0, backgroundColor: Colors.white),
         // backgroundColor: Color(0xFF2Ed4C5),
         body: IndexedStack(index: _currentIndex, children: _pages),
         //AI mode. will be more like a chatbot interface with layover interface that can be laid over other pages aprtially with a cancel buttom
@@ -63,7 +80,7 @@ class _HomepageState extends ConsumerState<Homepage> {
 
 //Using my own phone as example for screen size
 
-//to simpify the reusage of screenutil container
+//to simpify the reusage of screenutil ccontainer
 
 class CustomNavBar extends ConsumerStatefulWidget {
   const CustomNavBar({
@@ -84,12 +101,16 @@ class CustomNavBar extends ConsumerStatefulWidget {
 class _CustomNavBarState extends ConsumerState<CustomNavBar> {
   @override
   Widget build(BuildContext context) {
+    // print(ref.read(CoursesForEachDeptSaved));
     return Container(
       height: 40.h,
       margin: EdgeInsets.only(bottom: 4, right: 4, left: 4),
       decoration: BoxDecoration(
         color: mainColor,
         borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(color: Colors.black, offset: Offset(0, 3), blurRadius: 10),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

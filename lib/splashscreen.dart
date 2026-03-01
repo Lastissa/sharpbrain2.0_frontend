@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sharpbrains/auth/login_page.dart';
@@ -24,22 +25,35 @@ class Splashscreen extends ConsumerStatefulWidget {
 }
 
 class _SplashscreenState extends ConsumerState<Splashscreen> {
-  String defaultTextToDisplay = 'please wait';
+  @override
+  void initState() {
+    defaultTextToDisplay = widget.textToDisplay.trim().isEmpty
+        ? "please wait"
+        : widget.textToDisplay;
+    super.initState();
+    reroute();
+  }
+
+  late String defaultTextToDisplay;
   bool takingTooLong = false;
   late double onFired;
   final Color backGround = mainColor;
-  final Color textColor = Colors.white;
+  Color textColor = Colors.white;
   final int secondsToWait = 2;
   bool stopRolling = false;
   String messageToDisplayForPostLogin = 'Invalid Credential';
 
   void reroute() async {
-    onFired = DateTime.now().millisecondsSinceEpoch / 1000;
+    // onFired = DateTime.now().millisecondsSinceEpoch / 1000;
     final whereToGo = '/${widget.whereToGo}';
-    if (widget.wait == null || widget.wait == false) {
+    if (widget.wait == null || widget.wait == false)
+    //for every other normal splash screen
+    {
       await Future.delayed(Duration(seconds: secondsToWait));
       routerInstance.go(whereToGo);
-    } else if (widget.whereToGo == "registration" && widget.wait == true) {
+    } else if
+    //for when signup page is clicked and the user is redirected to thw registration page
+    (widget.whereToGo == "registration" && widget.wait == true) {
       await Future.delayed(Duration(milliseconds: 600));
       await ref
           .read(universityNameSaved.future)
@@ -91,8 +105,10 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
       } else {
         routerInstance.go(whereToGo);
       }
-    } else if (widget.wait == true && widget.whereToGo == "homepage") {
-      //check password here
+    } else if (widget.wait == true && widget.whereToGo == "homepage")
+    //when the login button is clicked and the user want to login
+    {
+      //check password with the result variable
       final result = await ref
           .read(
             userLoginCheck({
@@ -101,28 +117,67 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
             }).future,
           )
           .timeout(
-            Duration(seconds: 8),
+            Duration(seconds: 10),
             onTimeout: () {
-              return {"message": "Network Error"};
+              return {
+                "message": "Network Error",
+                "yearOfBirth": 0,
+                "monthOfBirth": null,
+                "dateOfBirth": 0,
+                "Universities_name": "invalid",
+                "dept_name": "invalid",
+                "level": "invalid",
+              };
             },
           );
-      // print(result.toString());
-      if (result["message"] == "success") {
+      if (result["message"] == "success")
+      //soon as password confirmation is succesful, move on to change the info string and call api for the user courses
+      {
+        setState(() {
+          defaultTextToDisplay = "password Validated, Configuring Dashboard...";
+        });
+        // print(result);
+        ref.read(userEmail.notifier).state = result["email"];
+        ref.read(userFirstname.notifier).state = result["first_name"];
+        ref.read(userSurname.notifier).state = result["last_name"];
+        ref.read(userYearOfBirth.notifier).state = result["yearOfBirth"]
+            .toString();
+        ref.read(userMonthOfBirth.notifier).state = result["monthOfBirth"];
+        ref.read(userDateOfBirth.notifier).state = result["dateOfBirth"]
+            .toString();
+        ref.read(userUniversityName.notifier).state =
+            result["Universities_name"];
+        ref.read(userDeptOfStudy.notifier).state = result["dept_name"];
+        ref.read(userLevel.notifier).state = result["level"];
+
+        final Map<String, dynamic> temp = await ref
+            .read(
+              CoursesForEachDept({
+                "uni_name": ref.read(userUniversityName),
+                "dept_name": ref.read(userDeptOfStudy),
+              }).future,
+            )
+            .timeout(
+              Duration(seconds: 5),
+              onTimeout: (() {
+                return {
+                  "uni_name": "invalid",
+                  "dept_name": "invalid",
+                  "first_semester": ["invalid"],
+                  "second_semester": [],
+                };
+              }),
+            );
+        ref.read(CoursesForEachDeptSaved.notifier).state = temp;
+        print(ref.read(CoursesForEachDeptSaved));
+
         routerInstance.go("/${widget.whereToGo}");
-        ref.invalidate(userLoginCheck);
-        // } else if (result["message"] == "timeout") {
-        //   if (mounted && stopRolling == false) {
-        //     setState(() {
-        //       stopRolling = true;
-        //       messageToDisplayForPostLogin = 'Network Error';
-        //       // print("yoo ${result}");
-        //     });
-        //   }
       } else {
         if (mounted && stopRolling == false) {
           setState(() {
             stopRolling = true;
             messageToDisplayForPostLogin = result["message"];
+            // ref.read(textToDisplay.notifier).state = result["message"];
             // print("yoo ${result}");
           });
         }
@@ -132,7 +187,7 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
 
   @override
   Widget build(BuildContext context) {
-    reroute();
+    // reroute();
 
     return Scaffold(
       backgroundColor: backGround,
@@ -159,6 +214,8 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
             stopRolling
                 ? ElevatedButton(
                     onPressed: () {
+                      ref.invalidate(CoursesForEachDeptSaved);
+                      ref.invalidate(CoursesForEachDeptSaved);
                       ref.invalidate(userLoginCheck);
                       return routerInstance.go("/login");
                     },
@@ -166,11 +223,9 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
                   )
                 : CircularProgressIndicator(color: Colors.white),
             Text(
-              stopRolling
-                  ? messageToDisplayForPostLogin
-                  : widget.textToDisplay.trim().isEmpty
-                  ? defaultTextToDisplay
-                  : widget.textToDisplay,
+              // ref.watch(textToDisplay),
+              stopRolling ? messageToDisplayForPostLogin : defaultTextToDisplay,
+
               style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
             ),
           ],
@@ -179,3 +234,7 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
     );
   }
 }
+
+// final a = StateProvider((ref) {
+//   return '';
+// });
