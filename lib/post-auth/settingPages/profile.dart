@@ -235,6 +235,8 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           emailVerification = false;
                                           passwordController.text = "";
                                           otpBoxController.text = "";
+                                          passwordConfirmPressed = false;
+                                          ref.invalidate(emailValidated);
                                         } else if (!emailEditMode) {
                                           emailEditMode = true;
                                         }
@@ -259,15 +261,10 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           uniEditMode = false;
                                           deptEditMode = false;
                                           levelEditMode = false;
-                                          passwordConfirmPressed = false;
-                                          // emailverified = false;
-                                          ref.invalidate(emailValidated);
                                         }
                                       });
                                     },
-                                    child: emailEditMode
-                                        ? Icon(Icons.cancel, color: Colors.red)
-                                        : Icon(Icons.edit, color: mainColor),
+                                    child: Icon(Icons.edit, color: mainColor),
                                   ),
                                 ],
                         ),
@@ -562,7 +559,6 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           ref.read(userEmail.notifier).state =
                                               emailController.text.trim();
                                           setState(() {
-                                            // emailverified = false;
                                             ref.invalidate(emailValidated);
                                             emailVerification = false;
                                             emailEditMode = false;

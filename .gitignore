@@ -15,9 +15,7 @@ build/
 **/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 **/android/**/generated/
 **/android/local.properties
-**/android/app/debug/
-**/android/app/profile/
-**/android/app/release/
+
 .gradle/
 
 # iOS: CocoaPods and build artifacts
