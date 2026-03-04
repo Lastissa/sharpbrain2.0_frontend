@@ -172,9 +172,9 @@ class _RegistrationState extends ConsumerState<Registration> {
                           ref.invalidate(userDeptOfStudy);
                           ref.invalidate(userLevel);
                           ref.invalidate(userPassword);
-                          ref.invalidate(otpStatus);
-                          ref.invalidate(otp);
-                          ref.invalidate(otpValue);
+                          // ref.invalidate(otpStatus);
+                          // ref.invalidate(otp);
+                          // ref.invalidate(otpValue);
                           routerInstance.go('/signup');
                         } else if (currentIndex == 1) {
                           setState(() {

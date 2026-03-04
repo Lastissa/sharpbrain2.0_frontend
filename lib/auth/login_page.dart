@@ -169,7 +169,15 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                           'admin') {
                                     routerInstance.push('/adminpage');
                                   }
-
+                                  // final data = {
+                                  //   "old_email": "lastissa111111@gmail.com",
+                                  //   "new_email":
+                                  //       "issaabdulsalamope11@gmail.com",
+                                  // };
+                                  // final o = await ref.refresh(
+                                  //   emailUpdate(data).future,
+                                  // );
+                                  // print(o);
                                   return _submit();
                                 },
                                 style: ElevatedButton.styleFrom(

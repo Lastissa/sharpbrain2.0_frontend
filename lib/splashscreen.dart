@@ -136,7 +136,6 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
         setState(() {
           defaultTextToDisplay = "password Validated, Configuring Dashboard...";
         });
-        // print(result);
         ref.read(userEmail.notifier).state = result["email"];
         ref.read(userFirstname.notifier).state = result["first_name"];
         ref.read(userSurname.notifier).state = result["last_name"];
@@ -169,7 +168,6 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
               }),
             );
         ref.read(CoursesForEachDeptSaved.notifier).state = temp;
-        print(ref.read(CoursesForEachDeptSaved));
 
         routerInstance.go("/${widget.whereToGo}");
       } else {
@@ -177,8 +175,6 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
           setState(() {
             stopRolling = true;
             messageToDisplayForPostLogin = result["message"];
-            // ref.read(textToDisplay.notifier).state = result["message"];
-            // print("yoo ${result}");
           });
         }
       }

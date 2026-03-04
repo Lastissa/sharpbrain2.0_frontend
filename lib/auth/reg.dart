@@ -137,39 +137,18 @@ class _Reg1State extends ConsumerState<Reg1> {
                                 if (!mounted) return;
                                 Timer(Duration(seconds: 1), () async {
                                   final c = await ref.read(
-                                    userLoginCheck({
-                                      "email": value,
-                                      "password": "",
-                                    }).future,
+                                    emailChecker({"email": value}).future,
                                   );
                                   if (!mounted) return;
-                                  if (c['message'] == "wrong password") {
+                                  if (c['message'] == "True") {
                                     startSpinning = true;
-
-                                    // if (mounted) {
-                                    //   Timer.periodic(Duration(seconds: 3), (
-                                    //     holder,
-                                    //   ) {
-                                    //     return notifier(
-                                    //       context: GlobalKey(),
-                                    //       duration: Duration(seconds: 5),
-                                    //       bg: mainColor,
-                                    //       text:
-                                    //           "EMAIL ALREADY EXIST, LOGIN ISTEAD",
-                                    //     );
-                                    //   });
-                                    // }
                                   }
                                   if (!mounted) return;
                                   print(c);
                                 });
-                                // } else {
-                                //   setState(() {
-                                //     startSpinning = false;
-                                //   });
+
                                 startSpinning = false;
                               }
-                              // print(value);
                             },
                             keyboardType: TextInputType.emailAddress,
                             controller: widget.emailController,
@@ -1048,7 +1027,9 @@ class _Reg3State extends ConsumerState<Reg3> {
                           ref.read(onButtonPressed.notifier).state = true;
                           if (ref.read(otpGotten) == false) {
                             await ref
-                                .read(otp.future)
+                                .refresh(
+                                  otp({"email": ref.read(userEmail)}).future,
+                                )
                                 .timeout(
                                   Duration(seconds: 10),
                                   onTimeout: () {
@@ -1064,9 +1045,11 @@ class _Reg3State extends ConsumerState<Reg3> {
                                   },
                                 );
                             print(ref.read(otpStatus));
-                            if (ref.read(otpValue) != 0) {
-                              ref.read(otpGotten.notifier).state = true;
-                            }
+                            print(ref.read(otpValue));
+                            ref.read(otpGotten.notifier).state = true;
+                            // if (ref.read(otpValue) != 0) {
+                            //   ref.read(otpGotten.notifier).state = true;
+                            // }
                           }
                         },
                         child: Text(
@@ -1128,7 +1111,7 @@ class _Reg3State extends ConsumerState<Reg3> {
                       ],
                     ),
                   )
-                : SizedBox(),
+                : SizedBox(child: Text(ref.read(otpStatus))),
           ],
         ),
       ),

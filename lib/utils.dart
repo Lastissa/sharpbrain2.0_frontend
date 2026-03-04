@@ -296,12 +296,6 @@ final universityNameSaved = FutureProvider((ref) async {
   if (response.statusCode == 200) {
     return uniNames;
   }
-  //  else {
-  //   return [
-  //     //since GET ony respond 200 as a good to go, everything else is useless
-  //     {'name_of_universities': 'invalid'},
-  //   ];
-  // }
 });
 
 final coursesOfferedSaved = FutureProvider<List<Map<String, dynamic>>?>((
@@ -410,20 +404,21 @@ final aiNavBarContent = StateProvider<List<List>>((ref) {
   ];
 });
 
-final otp = FutureProvider((ref) async {
+final otp = FutureProvider.family((ref, Map datatosend) async {
   final url = Uri.parse('${ref.read(backendUrl)}otp/');
   try {
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'email': ref.read(userEmail),
+        'email': datatosend["email"],
         'surname': ref.read(userSurname),
         'firstname': ref.read(userFirstname),
       }),
     );
-    final data = await jsonDecode(response.body);
+
     if (response.statusCode == 200) {
+      final data = await jsonDecode(response.body);
       ref.read(otpStatus.notifier).state = data['message'];
       ref.read(otpValue.notifier).state = data['otp'];
       return data;
@@ -534,7 +529,7 @@ final CoursesForEachDept = FutureProvider.family((
   ref,
   Map uniAndDeptName,
 ) async {
-  final url = Uri.parse("${ref.read(backendUrl)}/courses_for_each_dept/")
+  final url = Uri.parse("${ref.read(backendUrl)}courses_for_each_dept/")
       .replace(
         queryParameters: {
           "uni_name": uniAndDeptName["uni_name"],
@@ -563,4 +558,48 @@ final CoursesForEachDeptSaved = StateProvider<Map<String, dynamic>>((ref) {
 });
 final currentSemesterTracker = StateProvider<String>((ref) {
   return "first"; //or second
+});
+
+final passwordChecker = FutureProvider.family((ref, Map dataToSend) async {
+  final url = Uri.parse("${ref.read(backendUrl)}password_check/").replace(
+    queryParameters: {
+      "email": dataToSend["email"],
+      "password": dataToSend["password"],
+    },
+  );
+  final response = await http.get(url);
+  if (response.statusCode == 200) {
+    final data = await jsonDecode(response.body);
+    return data;
+  }
+  final Map<String, String> data = {"message": "not 200"};
+  return data;
+});
+
+final emailChecker = FutureProvider.family((ref, Map dataToSend) async {
+  final url = Uri.parse(
+    "${ref.read(backendUrl)}email_check/",
+  ).replace(queryParameters: {"email": dataToSend["email"]});
+  final response = await http.get(url);
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    return data;
+  }
+  return {"message": "app error"};
+});
+
+final emailUpdate = FutureProvider.family((ref, Map dataToSend) async {
+  final url = Uri.parse("${ref.read(backendUrl)}update_email/");
+  final response = await http.patch(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "old_email": dataToSend["old_email"],
+      "new_email": dataToSend["new_email"],
+    }),
+  );
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> data = await jsonDecode(response.body);
+    return data;
+  }
 });
