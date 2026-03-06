@@ -97,7 +97,9 @@ final GoRouter _router = GoRouter(
   ],
 );
 
-GoRouter get routerInstance => _router;
+GoRouter get routerInstance {
+  return _router; // or the arrow function; ...get name => _router
+}
 
 //for the screen size design reference
 final devicesizeX = Provider<double>((ref) {

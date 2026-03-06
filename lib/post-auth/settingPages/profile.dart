@@ -81,7 +81,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
     final uniWatcher = ref.read(universityNameSaved);
     return Scaffold(
       backgroundColor: mainColor,
-      appBar: AppBar(toolbarHeight: 0),
+      appBar: AppBar(toolbarHeight: 0, backgroundColor: mainColor),
       body: Stack(
         children: [
           Positioned(
@@ -362,10 +362,6 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                               );
                                             } else if (snapshot.hasData) {
                                               print("heyyy ${snapshot.data}");
-                                              print(
-                                                snapshot.data?[0]["message"] ==
-                                                    "incorrect",
-                                              );
 
                                               if (snapshot
                                                       .data?[0]["message"] ==
