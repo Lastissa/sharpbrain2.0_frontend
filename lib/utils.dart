@@ -607,6 +607,44 @@ final emailUpdate = FutureProvider.family((ref, Map dataToSend) async {
   }
 });
 
+final firstNameUpdate = FutureProvider.family((ref, Map dataToSend) async {
+  final url = Uri.parse("${ref.read(backendUrl)}update_firstname/");
+  final response = await http.patch(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "new_first_name": dataToSend["new_first_name"],
+      "email": dataToSend["email"],
+      "password": dataToSend["password"],
+    }),
+  );
+  if (response.statusCode == 200) {
+    final data = await jsonDecode(response.body);
+    return data;
+  } else {
+    return {"message": "app error"};
+  }
+});
+
+final surNameUpdate = FutureProvider.family((ref, Map dataToSend) async {
+  final url = Uri.parse("${ref.read(backendUrl)}update_surname/");
+  final response = await http.patch(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "new_sur_name": dataToSend["new_sur_name"],
+      "email": dataToSend["email"],
+      "password": dataToSend["password"],
+    }),
+  );
+  if (response.statusCode == 200) {
+    final data = await jsonDecode(response.body);
+    return data;
+  } else {
+    return {"message": "app error"};
+  }
+});
+
 final renderHoldUp = StateProvider<int>((ref) {
   //This is due to the delay of render free tier starting up bullshit
   return 45;

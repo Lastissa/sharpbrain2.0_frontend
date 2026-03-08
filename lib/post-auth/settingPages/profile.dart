@@ -25,10 +25,13 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
   }
 
   final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final otpBoxController = TextEditingController();
+  final emailPasswordController = TextEditingController();
+  final emailOtpBoxController = TextEditingController();
   final firstNameController = TextEditingController();
+  final firstNamePassowrdController = TextEditingController();
   final surNameController = TextEditingController();
+  final surNamePassowrdController = TextEditingController();
+
   final uniController = TextEditingController();
   final deptController = TextEditingController();
   final levelController = TextEditingController();
@@ -46,13 +49,16 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
       false; // this is to ask for password from the user to be sure they are the owner of the account
   bool firstNameAskPassword =
       false; // this is to ask for password from the user to be sure they are the owner of the account
-  bool passwordConfirmPressed =
+  bool surNameAskPassword =
+      false; // this is to ask for password from the user to be sure they are the owner of the account
+  bool emailPasswordConfirmPressed =
       false; //to check wether the user have pressed the suffix button in the password textformfeild
   bool emailVerification =
       false; // to wether the otp textformfeild should pop up or just stay down
-  // bool emailverified =
-  //     false; //this is for after email have been verfied and to show the little act that the email is being updated
-
+  bool firstNamePasswordConfirmPressed =
+      false; //for monitoring the state of the firstname password
+  bool surNamePasswordConfirmPressed =
+      false; //for monitoring the state of the firstname password
   void message({required String text}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -154,9 +160,9 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                         child: TextFormField(
                           controller: emailController,
                           onChanged: (value) {
-                            if (passwordConfirmPressed) {
+                            if (emailPasswordConfirmPressed) {
                               setState(() {
-                                passwordConfirmPressed = false;
+                                emailPasswordConfirmPressed = false;
                               });
                             }
                             if (emailVerification) {
@@ -235,17 +241,13 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                         userEmail,
                                       );
                                       setState(() {
-                                        if (emailEditMode) {
-                                          emailEditMode = false;
-                                          emailAskPassword = false;
-                                          emailVerification = false;
-                                          passwordController.text = "";
-                                          otpBoxController.text = "";
-                                          passwordConfirmPressed = false;
-                                          ref.invalidate(emailValidated);
-                                        } else if (!emailEditMode) {
-                                          emailEditMode = true;
-                                        }
+                                        emailEditMode = false;
+                                        emailAskPassword = false;
+                                        emailVerification = false;
+                                        emailPasswordController.text = "";
+                                        emailOtpBoxController.text = "";
+                                        emailPasswordConfirmPressed = false;
+                                        ref.invalidate(emailValidated);
                                       });
                                     },
                                     child: Icon(
@@ -258,17 +260,23 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                   InkWell(
                                     onTap: () {
                                       setState(() {
-                                        if (emailEditMode) {
-                                          emailEditMode = false;
-                                        } else if (!emailEditMode) {
-                                          emailEditMode = true;
-                                          firstNameEditMode = false;
-                                          surNameEditMode = false;
-                                          uniEditMode = false;
-                                          deptEditMode = false;
-                                          levelEditMode = false;
-                                          firstNameAskPassword = false;
-                                        }
+                                        emailEditMode = true;
+                                        firstNameEditMode = false;
+                                        surNameEditMode = false;
+                                        uniEditMode = false;
+                                        deptEditMode = false;
+                                        levelEditMode = false;
+                                        firstNameAskPassword = false;
+                                        firstNamePasswordConfirmPressed = false;
+                                        firstNamePassowrdController.text = "";
+                                        firstNameController.text = ref.read(
+                                          userFirstname,
+                                        );
+                                        surNamePasswordConfirmPressed = false;
+                                        surNamePassowrdController.text = "";
+                                        surNameController.text = ref.read(
+                                          userSurname,
+                                        );
                                       });
                                     },
                                     child: Icon(Icons.edit, color: mainColor),
@@ -284,21 +292,21 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                controller: passwordController,
+                                controller: emailPasswordController,
                                 onChanged: (value) {
                                   setState(() {
-                                    passwordConfirmPressed = false;
+                                    emailPasswordConfirmPressed = false;
                                   });
                                 },
 
-                                keyboardType: TextInputType.visiblePassword,
+                                // keyboardType: TextInputType.visiblePassword,
+                                obscureText: true,
                                 decoration: InputDecoration(
-                                  // border: InputBorder.none,
                                   prefixIcon: Icon(
                                     Icons.lock,
                                     color: mainColor,
                                   ),
-                                  suffix: passwordConfirmPressed
+                                  suffix: emailPasswordConfirmPressed
                                       ? FutureBuilder(
                                           future: Future(() async {
                                             //first thing first, check for password,if it dey valid but before you check , make sure there is no typo in the new email
@@ -320,7 +328,8 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                       userEmail,
                                                     ),
                                                     "password":
-                                                        passwordController.text,
+                                                        emailPasswordController
+                                                            .text,
                                                   }).future,
                                                 )
                                                 .timeout(
@@ -396,7 +405,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                     LinearProgressIndicator(),
                                               );
                                             } else if (snapshot.hasData) {
-                                              print("heyyy ${snapshot.data}");
+                                              // print("heyyy ${snapshot.data}");
                                               if (snapshot
                                                       .data?[0]["message"] ==
                                                   //checking if the user new email is valid before even sendong any request to my server
@@ -404,7 +413,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                 WidgetsBinding.instance
                                                     .addPostFrameCallback((_) {
                                                       setState(() {
-                                                        passwordConfirmPressed =
+                                                        emailPasswordConfirmPressed =
                                                             false;
                                                       });
                                                       ElegantNotification(
@@ -506,7 +515,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                         ).show(context);
 
                                                         setState(() {
-                                                          passwordConfirmPressed =
+                                                          emailPasswordConfirmPressed =
                                                               false;
                                                         });
                                                       });
@@ -523,7 +532,8 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                       : ElevatedButton(
                                           onPressed: () {
                                             setState(() {
-                                              passwordConfirmPressed = true;
+                                              emailPasswordConfirmPressed =
+                                                  true;
                                             });
                                           },
                                           child: Text('Confirm'),
@@ -557,7 +567,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                 height: 0.1 * ref.read(devicesizeY).h,
 
                                 child: TextFormField(
-                                  controller: otpBoxController,
+                                  controller: emailOtpBoxController,
                                   maxLength: 5,
                                   onChanged: (value) async {
                                     if (value.length ==
@@ -582,9 +592,9 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                 "new_email": emailController
                                                     .text
                                                     .trim(),
-                                                "password": passwordController
-                                                    .text
-                                                    .trim(),
+                                                "password":
+                                                    emailPasswordController.text
+                                                        .trim(),
                                               }).future,
                                             )
                                             .timeout(
@@ -594,12 +604,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                               ),
                                             );
                                         ref.invalidate(emailValidated);
-                                        // print("hey fam : $data");
-                                        // print(
-                                        //   data != null &&
-                                        //       data["message"] == "success" &&
-                                        //       mounted,
-                                        // );
+
                                         if (data != null &&
                                             data["message"] == "success" &&
                                             mounted) {
@@ -618,11 +623,11 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                             ref.invalidate(emailValidated);
                                             emailVerification = false;
                                             emailEditMode = false;
-                                            otpBoxController.text = "";
-                                            passwordController.text = "";
-                                            passwordConfirmPressed = false;
+                                            emailOtpBoxController.text = "";
+                                            emailPasswordController.text = "";
+                                            emailPasswordConfirmPressed = false;
                                             emailAskPassword = false;
-                                            otpBoxController.text = "";
+                                            emailOtpBoxController.text = "";
                                           });
                                         } else {
                                           ElegantNotification(
@@ -733,6 +738,17 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                             Icons.notification_important,
                                           ),
                                         ).show(context);
+                                      } else if (firstNameController.text
+                                          .trim()
+                                          .isEmpty) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "FirstName Field Cannot Be Empty",
+                                          ),
+                                          icon: Icon(
+                                            Icons.notification_important,
+                                          ),
+                                        ).show(context);
                                       } else {
                                         setState(() {
                                           firstNameEditMode = true;
@@ -745,41 +761,49 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                   InkWell(
                                     onTap: () {
                                       setState(() {
-                                        if (firstNameEditMode) {
-                                          firstNameEditMode = false;
-                                          firstNameAskPassword = false;
-                                        } else if (!firstNameEditMode) {
-                                          firstNameEditMode = true;
-                                        }
+                                        firstNameEditMode = false;
+                                        firstNameAskPassword = false;
+                                        firstNameController.text = ref.read(
+                                          userFirstname,
+                                        );
+                                        firstNamePasswordConfirmPressed = false;
+                                        firstNamePassowrdController.text = "";
                                       });
                                     },
-                                    child: firstNameEditMode
-                                        ? Icon(Icons.cancel, color: Colors.red)
-                                        : Icon(Icons.edit, color: mainColor),
+                                    child: Icon(
+                                      Icons.cancel,
+                                      color: Colors.red,
+                                    ),
                                   ),
                                 ]
                               : [
                                   InkWell(
                                     onTap: () {
                                       setState(() {
-                                        if (firstNameEditMode) {
-                                          firstNameEditMode = false;
-                                        } else if (!firstNameEditMode) {
-                                          firstNameEditMode = true;
-                                          emailEditMode = false;
-                                          emailAskPassword = false;
-                                          passwordController.text = "";
-                                          surNameEditMode = false;
-                                          uniEditMode = false;
-                                          deptEditMode = false;
-                                          levelEditMode = false;
-                                          firstNameAskPassword = false;
-                                        }
+                                        firstNameEditMode = true;
+                                        emailEditMode = false;
+                                        emailAskPassword = false;
+                                        emailPasswordController.text = "";
+                                        emailController.text = ref.read(
+                                          userEmail,
+                                        );
+                                        surNameEditMode = false;
+                                        uniEditMode = false;
+                                        deptEditMode = false;
+                                        levelEditMode = false;
+                                        firstNameAskPassword = false;
+                                        firstNamePasswordConfirmPressed = false;
+
+                                        surNameAskPassword = false;
+                                        surNamePasswordConfirmPressed = false;
+                                        surNamePasswordConfirmPressed = false;
+                                        surNamePassowrdController.text = "";
+                                        surNameController.text = ref.read(
+                                          userSurname,
+                                        );
                                       });
                                     },
-                                    child: firstNameEditMode
-                                        ? Icon(Icons.cancel, color: Colors.red)
-                                        : Icon(Icons.edit, color: mainColor),
+                                    child: Icon(Icons.edit, color: mainColor),
                                   ),
                                 ],
                         ),
@@ -790,13 +814,144 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                   AnimatedCrossFade(
                     firstChild: SizedBox(),
                     secondChild: TextFormField(
+                      controller: firstNamePassowrdController,
+                      onChanged: (value) {
+                        if (!firstNamePasswordConfirmPressed) {
+                          setState(() {
+                            firstNamePasswordConfirmPressed = false;
+                          });
+                        }
+                      },
+                      obscureText: true,
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.lock, color: mainColor),
+
                         hintText: "Confirm Password",
-                        suffix: ElevatedButton(
-                          onPressed: () {},
-                          child: Text("Confirm"),
-                        ),
+                        suffix: firstNamePasswordConfirmPressed
+                            ? FutureBuilder(
+                                future: Future(() async {
+                                  //the holder is just there incase the user keep fumbling with the firstname controller, i mean when the future request is almost beign made, using controlller.text is risky
+                                  if (!firstNameEditMode) {
+                                    return {"message": "cancelled"};
+                                  } //this is for safety check incase the user calcel the request while it is about running
+                                  //the safety chechk will barely work but omo, just leave this one only
+                                  String firstNameHolder = firstNameController
+                                      .text
+                                      .trim();
+                                  final data = await ref
+                                      .read(
+                                        firstNameUpdate({
+                                          "email": ref.read(userEmail),
+                                          "password":
+                                              firstNamePassowrdController.text,
+                                          "new_first_name": firstNameHolder
+                                              .trim(),
+                                        }).future,
+                                      )
+                                      .timeout(
+                                        Duration(
+                                          seconds: 8 + ref.read(renderHoldUp),
+                                        ),
+                                        onTimeout: () {
+                                          return {"message": "timeout"};
+                                        },
+                                      );
+
+                                  if (data["message"] == "success") {
+                                    ref.read(userFirstname.notifier).state =
+                                        firstNameHolder.toUpperCase();
+                                  }
+
+                                  return data;
+                                }),
+                                builder: (builder, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return SizedBox(
+                                      width: 0.2 * ref.read(devicesizeX).w,
+                                      child: LinearProgressIndicator(),
+                                    );
+                                    ;
+                                  } else if (snapshot.hasData) {
+                                    // print(snapshot.data);
+
+                                    if (snapshot.data["message"] == "success" &&
+                                        firstNameEditMode == true &&
+                                        mounted) {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            setState(() {
+                                              firstNameEditMode = false;
+                                              firstNameAskPassword = false;
+                                              firstNamePasswordConfirmPressed =
+                                                  false;
+                                            });
+
+                                            firstNameController.text = ref.read(
+                                              userFirstname,
+                                            );
+
+                                            firstNamePassowrdController.text =
+                                                "";
+                                            ElegantNotification(
+                                              description: Text(
+                                                "First Name Updated Successfuly",
+                                              ),
+                                              icon: Icon(
+                                                Icons.notification_important,
+                                                color: mainColor,
+                                              ),
+                                            ).show(context);
+                                          });
+
+                                      return Icon(
+                                        Icons.verified,
+                                        color: mainColor,
+                                      );
+                                    } else if (snapshot.data["message"] ==
+                                            "incorrect_password" &&
+                                        firstNameEditMode == true) {
+                                      ElegantNotification(
+                                        description: Text("Incorrect Password"),
+                                        icon: Icon(Icons.warning),
+                                      ).show(context);
+
+                                      return Icon(
+                                        Icons.error,
+                                        color: Colors.red,
+                                      );
+                                    } else if (snapshot.data["message"] ==
+                                            "no user" &&
+                                        firstNameEditMode == true) {
+                                      ElegantNotification(
+                                        description: Text(
+                                          "Email does not exist; normmaly it is impossible for you to be seeing this notification",
+                                        ),
+                                        icon: Icon(
+                                          Icons.warning,
+                                          color: Colors.red,
+                                        ),
+                                      ).show(context);
+                                      return Icon(
+                                        Icons.error_rounded,
+                                        color: Colors.red,
+                                      );
+                                    } else {
+                                      // print("Calcelled");
+                                      return SizedBox();
+                                    }
+                                  }
+                                  return SizedBox();
+                                },
+                              )
+                            : ElevatedButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    firstNamePasswordConfirmPressed = true;
+                                  });
+                                },
+                                child: Text("Confirm"),
+                              ),
                       ),
                     ),
                     crossFadeState: firstNameAskPassword
@@ -853,61 +1008,240 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                               ? [
                                   InkWell(
                                     onTap: () {
-                                      setState(() {
-                                        if (surNameEditMode) {
-                                          surNameEditMode = false;
-                                        } else if (!surNameEditMode) {
+                                      if (surNameController.text
+                                              .trim()
+                                              .toLowerCase() ==
+                                          ref.read(userSurname).toLowerCase()) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "No change in Surname dectected",
+                                          ),
+                                          icon: Icon(
+                                            Icons.notification_important,
+                                          ),
+                                        ).show(context);
+                                      } else if (surNameController.text
+                                          .trim()
+                                          .isEmpty) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "Surname Field Cannot Be Empty",
+                                          ),
+                                          icon: Icon(
+                                            Icons.notification_important,
+                                          ),
+                                        ).show(context);
+                                      } else {
+                                        setState(() {
                                           surNameEditMode = true;
-                                        }
-                                      });
-
-                                      message(text: "Surname Updated");
+                                          surNameAskPassword = true;
+                                        });
+                                      }
                                     },
                                     child: Icon(Icons.save, color: mainColor),
                                   ),
                                   InkWell(
                                     onTap: () {
                                       setState(() {
-                                        if (surNameEditMode) {
-                                          surNameEditMode = false;
-                                        } else if (!surNameEditMode) {
-                                          surNameEditMode = true;
-                                        }
+                                        surNameEditMode = false;
+                                        surNameAskPassword = false;
+                                        surNameController.text = ref.read(
+                                          userFirstname,
+                                        );
+                                        surNamePasswordConfirmPressed = false;
+                                        surNamePassowrdController.text = "";
+                                        surNameController.text = ref.read(
+                                          userSurname,
+                                        );
                                       });
                                     },
-                                    child: surNameEditMode
-                                        ? Icon(Icons.cancel, color: Colors.red)
-                                        : Icon(Icons.edit, color: mainColor),
+                                    child: Icon(
+                                      Icons.cancel,
+                                      color: Colors.red,
+                                    ),
                                   ),
                                 ]
                               : [
                                   InkWell(
                                     onTap: () {
                                       setState(() {
-                                        if (surNameEditMode) {
-                                          surNameEditMode = false;
-                                        } else if (!surNameEditMode) {
-                                          surNameEditMode = true;
-                                          emailEditMode = false;
-                                          emailAskPassword = false;
-                                          passwordController.text = "";
-                                          firstNameEditMode = false;
-                                          uniEditMode = false;
-                                          deptEditMode = false;
-                                          levelEditMode = false;
-                                          firstNameAskPassword = false;
-                                        }
+                                        surNameEditMode = true;
+                                        emailEditMode = false;
+                                        emailAskPassword = false;
+                                        emailPasswordController.text = "";
+                                        emailController.text = ref.read(
+                                          userEmail,
+                                        );
+                                        firstNameEditMode = false;
+                                        uniEditMode = false;
+                                        deptEditMode = false;
+                                        levelEditMode = false;
+                                        surNameAskPassword = false;
+                                        surNamePasswordConfirmPressed = false;
+                                        firstNameAskPassword = false;
+                                        firstNamePasswordConfirmPressed = false;
+                                        firstNamePassowrdController.text = "";
+                                        firstNameController.text = ref.read(
+                                          userFirstname,
+                                        );
                                       });
                                     },
-                                    child: surNameEditMode
-                                        ? Icon(Icons.cancel, color: Colors.red)
-                                        : Icon(Icons.edit, color: mainColor),
+                                    child: Icon(Icons.edit, color: mainColor),
                                   ),
                                 ],
                         ),
                       ),
                     ],
                   ),
+                  //this is not seen as part of the row cos it is depedanr on wether the user want to change their first name or not
+                  AnimatedCrossFade(
+                    firstChild: SizedBox(),
+                    secondChild: TextFormField(
+                      controller: surNamePassowrdController,
+                      onChanged: (value) {
+                        if (!surNamePasswordConfirmPressed) {
+                          setState(() {
+                            surNamePasswordConfirmPressed = false;
+                          });
+                        }
+                      },
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.lock, color: mainColor),
+
+                        hintText: "Confirm Password",
+                        suffix: surNamePasswordConfirmPressed
+                            ? FutureBuilder(
+                                future: Future(() async {
+                                  //the holder is just there incase the user keep fumbling with the firstname controller, i mean when the future request is almost beign made, using controlller.text is risky
+                                  if (!surNameEditMode) {
+                                    return {"message": "cancelled"};
+                                  } //this is for safety check incase the user calcel the request while it is about running
+                                  //the safety chechk will barely work but omo, just leave this one only
+                                  String surNameHolder = surNameController.text
+                                      .trim();
+                                  final data = await ref
+                                      .read(
+                                        surNameUpdate({
+                                          "email": ref.read(userEmail),
+                                          "password":
+                                              surNamePassowrdController.text,
+                                          "new_sur_name": surNameHolder.trim(),
+                                        }).future,
+                                      )
+                                      .timeout(
+                                        Duration(
+                                          seconds: 8 + ref.read(renderHoldUp),
+                                        ),
+                                        onTimeout: () {
+                                          return {"message": "timeout"};
+                                        },
+                                      );
+
+                                  if (data["message"] == "success") {
+                                    ref.read(userSurname.notifier).state =
+                                        surNameHolder.toUpperCase();
+                                  }
+
+                                  return data;
+                                }),
+                                builder: (builder, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return SizedBox(
+                                      width: 0.2 * ref.read(devicesizeX).w,
+                                      child: LinearProgressIndicator(),
+                                    );
+                                    ;
+                                  } else if (snapshot.hasData) {
+                                    // print(snapshot.data);
+
+                                    if (snapshot.data["message"] == "success" &&
+                                        surNameEditMode == true &&
+                                        mounted) {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            setState(() {
+                                              surNameEditMode = false;
+                                              surNameAskPassword = false;
+                                              surNamePasswordConfirmPressed =
+                                                  false;
+                                            });
+
+                                            surNameController.text = ref.read(
+                                              userSurname,
+                                            );
+
+                                            surNamePassowrdController.text = "";
+                                            ElegantNotification(
+                                              description: Text(
+                                                "Surname Updated Successfuly",
+                                              ),
+                                              icon: Icon(
+                                                Icons.notification_important,
+                                                color: mainColor,
+                                              ),
+                                            ).show(context);
+                                          });
+
+                                      return Icon(
+                                        Icons.verified,
+                                        color: mainColor,
+                                      );
+                                    } else if (snapshot.data["message"] ==
+                                            "incorrect_password" &&
+                                        surNameEditMode == true) {
+                                      ElegantNotification(
+                                        description: Text("Incorrect Password"),
+                                        icon: Icon(Icons.warning),
+                                      ).show(context);
+
+                                      return Icon(
+                                        Icons.error,
+                                        color: Colors.red,
+                                      );
+                                    } else if (snapshot.data["message"] ==
+                                            "no user" &&
+                                        surNameEditMode == true) {
+                                      ElegantNotification(
+                                        description: Text(
+                                          "Email does not exist; normmaly it is impossible for you to be seeing this notification",
+                                        ),
+                                        icon: Icon(
+                                          Icons.warning,
+                                          color: Colors.red,
+                                        ),
+                                      ).show(context);
+                                      return Icon(
+                                        Icons.error_rounded,
+                                        color: Colors.red,
+                                      );
+                                    } else {
+                                      // print("Calcelled");
+                                      return SizedBox();
+                                    }
+                                  }
+                                  return SizedBox();
+                                },
+                              )
+                            : ElevatedButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    surNamePasswordConfirmPressed = true;
+                                  });
+                                },
+                                child: Text("Confirm"),
+                              ),
+                      ),
+                    ),
+                    crossFadeState: surNameAskPassword
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: Duration(milliseconds: 170),
+                    firstCurve: Curves.easeOut,
+                    secondCurve: Curves.easeOut,
+                  ),
+
                   Row(
                     children: [
                       Padding(
@@ -985,32 +1319,43 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                         }
                                       });
                                     },
-                                    child: levelEditMode
-                                        ? Icon(Icons.cancel, color: Colors.red)
-                                        : Icon(Icons.edit, color: mainColor),
+                                    child: Icon(
+                                      Icons.cancel,
+                                      color: Colors.red,
+                                    ),
                                   ),
                                 ]
                               : [
                                   InkWell(
                                     onTap: () {
                                       setState(() {
-                                        if (levelEditMode) {
-                                          levelEditMode = false;
-                                        } else if (!levelEditMode) {
-                                          levelEditMode = true;
-                                          emailEditMode = false;
-                                          emailAskPassword = false;
-                                          passwordController.text = "";
-                                          firstNameEditMode = false;
-                                          surNameEditMode = false;
-                                          uniEditMode = false;
-                                          deptEditMode = false;
-                                        }
+                                        levelEditMode = true;
+                                        emailEditMode = false;
+                                        emailAskPassword = false;
+                                        emailPasswordConfirmPressed = false;
+                                        emailVerification = false;
+                                        emailOtpBoxController.text = "";
+                                        emailPasswordController.text = "";
+                                        emailController.text = ref.read(
+                                          userEmail,
+                                        );
+                                        firstNameEditMode = false;
+                                        surNameEditMode = false;
+                                        uniEditMode = false;
+                                        deptEditMode = false;
+                                        firstNamePasswordConfirmPressed = false;
+                                        firstNamePassowrdController.text = "";
+                                        firstNameController.text = ref.read(
+                                          userFirstname,
+                                        );
+                                        surNamePasswordConfirmPressed = false;
+                                        surNamePassowrdController.text = "";
+                                        surNameController.text = ref.read(
+                                          userSurname,
+                                        );
                                       });
                                     },
-                                    child: levelEditMode
-                                        ? Icon(Icons.cancel, color: Colors.red)
-                                        : Icon(Icons.edit, color: mainColor),
+                                    child: Icon(Icons.edit, color: mainColor),
                                   ),
                                 ],
                         ),
@@ -1110,45 +1455,51 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                               }
                                             });
                                           },
-                                          child: uniEditMode
-                                              ? Icon(
-                                                  Icons.cancel,
-                                                  color: Colors.red,
-                                                )
-                                              : Icon(
-                                                  Icons.edit,
-                                                  color: mainColor,
-                                                ),
+                                          child: Icon(
+                                            Icons.cancel,
+                                            color: Colors.red,
+                                          ),
                                         ),
                                       ]
                                     : [
                                         InkWell(
                                           onTap: () {
                                             setState(() {
-                                              if (uniEditMode) {
-                                                uniEditMode = false;
-                                              } else if (!uniEditMode) {
-                                                uniEditMode = true;
-                                                emailEditMode = false;
-                                                emailAskPassword = false;
-                                                passwordController.text = "";
-                                                firstNameEditMode = false;
-                                                surNameEditMode = false;
-                                                deptEditMode = false;
-                                                levelEditMode = false;
-                                                firstNameAskPassword = false;
-                                              }
+                                              uniEditMode = true;
+                                              emailEditMode = false;
+                                              emailAskPassword = false;
+                                              emailPasswordConfirmPressed =
+                                                  false;
+                                              emailVerification = false;
+                                              emailOtpBoxController.text = "";
+                                              emailPasswordController.text = "";
+                                              emailController.text = ref.read(
+                                                userEmail,
+                                              );
+                                              firstNameEditMode = false;
+                                              surNameEditMode = false;
+                                              deptEditMode = false;
+                                              levelEditMode = false;
+                                              firstNameAskPassword = false;
+                                              firstNamePasswordConfirmPressed =
+                                                  false;
+                                              firstNamePassowrdController.text =
+                                                  "";
+                                              firstNameController.text = ref
+                                                  .read(userFirstname);
+                                              surNamePasswordConfirmPressed =
+                                                  false;
+                                              surNamePassowrdController.text =
+                                                  "";
+                                              surNameController.text = ref.read(
+                                                userSurname,
+                                              );
                                             });
                                           },
-                                          child: uniEditMode
-                                              ? Icon(
-                                                  Icons.cancel,
-                                                  color: Colors.red,
-                                                )
-                                              : Icon(
-                                                  Icons.edit,
-                                                  color: mainColor,
-                                                ),
+                                          child: Icon(
+                                            Icons.edit,
+                                            color: mainColor,
+                                          ),
                                         ),
                                       ],
                               ),
@@ -1266,45 +1617,68 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                               }
                                             });
                                           },
-                                          child: deptEditMode
-                                              ? Icon(
-                                                  Icons.cancel,
-                                                  color: Colors.red,
-                                                )
-                                              : Icon(
-                                                  Icons.edit,
-                                                  color: mainColor,
-                                                ),
+                                          child: Icon(
+                                            Icons.cancel,
+                                            color: Colors.red,
+                                          ),
                                         ),
                                       ]
                                     : [
                                         InkWell(
                                           onTap: () {
                                             setState(() {
-                                              if (deptEditMode) {
-                                                deptEditMode = false;
-                                              } else if (!deptEditMode) {
-                                                deptEditMode = true;
-                                                emailEditMode = false;
-                                                emailAskPassword = false;
-                                                passwordController.text = "";
-                                                firstNameEditMode = false;
-                                                surNameEditMode = false;
-                                                uniEditMode = false;
-                                                levelEditMode = false;
-                                                firstNameAskPassword = false;
-                                              }
+                                              deptEditMode = true;
+                                              emailEditMode = false;
+                                              emailAskPassword = false;
+                                              emailPasswordConfirmPressed =
+                                                  false;
+                                              emailVerification = false;
+                                              emailOtpBoxController.text = "";
+                                              emailPasswordController.text = "";
+                                              emailController.text = ref.read(
+                                                userEmail,
+                                              );
+                                              firstNameEditMode = false;
+                                              surNameEditMode = false;
+                                              uniEditMode = false;
+                                              levelEditMode = false;
+                                              firstNameAskPassword = false;
+                                              firstNamePasswordConfirmPressed =
+                                                  false;
+                                              emailEditMode = false;
+                                              emailAskPassword = false;
+                                              emailPasswordConfirmPressed =
+                                                  false;
+                                              emailVerification = false;
+                                              emailOtpBoxController.text = "";
+                                              emailPasswordController.text = "";
+                                              emailController.text = ref.read(
+                                                userEmail,
+                                              );
+                                              firstNameEditMode = false;
+                                              surNameEditMode = false;
+                                              uniEditMode = false;
+                                              levelEditMode = false;
+                                              firstNameAskPassword = false;
+                                              firstNamePasswordConfirmPressed =
+                                                  false;
+                                              firstNamePassowrdController.text =
+                                                  "";
+                                              firstNameController.text = ref
+                                                  .read(userFirstname);
+                                              surNamePasswordConfirmPressed =
+                                                  false;
+                                              surNamePassowrdController.text =
+                                                  "";
+                                              surNameController.text = ref.read(
+                                                userSurname,
+                                              );
                                             });
                                           },
-                                          child: deptEditMode
-                                              ? Icon(
-                                                  Icons.cancel,
-                                                  color: Colors.red,
-                                                )
-                                              : Icon(
-                                                  Icons.edit,
-                                                  color: mainColor,
-                                                ),
+                                          child: Icon(
+                                            Icons.edit,
+                                            color: mainColor,
+                                          ),
                                         ),
                                       ],
                               ),
