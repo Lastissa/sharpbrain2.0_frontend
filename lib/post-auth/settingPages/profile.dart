@@ -816,7 +816,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                     secondChild: TextFormField(
                       controller: firstNamePassowrdController,
                       onChanged: (value) {
-                        if (!firstNamePasswordConfirmPressed) {
+                        if (firstNamePasswordConfirmPressed) {
                           setState(() {
                             firstNamePasswordConfirmPressed = false;
                           });
@@ -838,6 +838,9 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                   String firstNameHolder = firstNameController
                                       .text
                                       .trim();
+                                  if (!firstNamePasswordConfirmPressed) {
+                                    return {"message": "cancelled"};
+                                  }
                                   final data = await ref
                                       .read(
                                         firstNameUpdate({
@@ -856,8 +859,11 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           return {"message": "timeout"};
                                         },
                                       );
-
-                                  if (data["message"] == "success") {
+                                  if (!firstNamePasswordConfirmPressed) {
+                                    return {"message": "cancelled"};
+                                  }
+                                  if (data["message"] == "success" &&
+                                      firstNamePasswordConfirmPressed) {
                                     ref.read(userFirstname.notifier).state =
                                         firstNameHolder.toUpperCase();
                                   }
@@ -873,7 +879,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                     );
                                     ;
                                   } else if (snapshot.hasData) {
-                                    // print(snapshot.data);
+                                    print(snapshot.data);
 
                                     if (snapshot.data["message"] == "success" &&
                                         firstNameEditMode == true &&
@@ -910,12 +916,23 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                       );
                                     } else if (snapshot.data["message"] ==
                                             "incorrect_password" &&
-                                        firstNameEditMode == true) {
-                                      ElegantNotification(
-                                        description: Text("Incorrect Password"),
-                                        icon: Icon(Icons.warning),
-                                      ).show(context);
-
+                                        firstNameEditMode == true &&
+                                        mounted) {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            ElegantNotification(
+                                              description: Text(
+                                                "Incorrect Password",
+                                              ),
+                                              icon: Icon(Icons.warning),
+                                            ).show(context);
+                                            setState(() {
+                                              firstNamePasswordConfirmPressed =
+                                                  false;
+                                            });
+                                            firstNamePassowrdController.text =
+                                                "";
+                                          });
                                       return Icon(
                                         Icons.error,
                                         color: Colors.red,
@@ -923,22 +940,48 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                     } else if (snapshot.data["message"] ==
                                             "no user" &&
                                         firstNameEditMode == true) {
-                                      ElegantNotification(
-                                        description: Text(
-                                          "Email does not exist; normmaly it is impossible for you to be seeing this notification",
-                                        ),
-                                        icon: Icon(
-                                          Icons.warning,
-                                          color: Colors.red,
-                                        ),
-                                      ).show(context);
+                                      WidgetsBinding.instance.addPostFrameCallback((
+                                        _,
+                                      ) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "Email does not exist; normmaly it is impossible for you to be seeing this notification",
+                                          ),
+                                          icon: Icon(
+                                            Icons.warning,
+                                            color: Colors.red,
+                                          ),
+                                        ).show(context);
+                                        setState(() {
+                                          firstNamePasswordConfirmPressed =
+                                              false;
+                                        });
+                                      });
                                       return Icon(
                                         Icons.error_rounded,
                                         color: Colors.red,
                                       );
                                     } else {
-                                      // print("Calcelled");
-                                      return SizedBox();
+                                      WidgetsBinding.instance.addPostFrameCallback((
+                                        _,
+                                      ) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "Update Not successful\n${snapshot.data["message"]}",
+                                          ),
+                                          icon: Icon(
+                                            Icons.notification_important,
+                                          ),
+                                        ).show(context);
+                                        setState(() {
+                                          firstNamePasswordConfirmPressed =
+                                              false;
+                                        });
+                                      });
+                                      return Icon(
+                                        Icons.error,
+                                        color: Colors.red,
+                                      );
                                     }
                                   }
                                   return SizedBox();
@@ -1099,7 +1142,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                     secondChild: TextFormField(
                       controller: surNamePassowrdController,
                       onChanged: (value) {
-                        if (!surNamePasswordConfirmPressed) {
+                        if (surNamePasswordConfirmPressed) {
                           setState(() {
                             surNamePasswordConfirmPressed = false;
                           });
@@ -1120,6 +1163,9 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                   //the safety chechk will barely work but omo, just leave this one only
                                   String surNameHolder = surNameController.text
                                       .trim();
+                                  if (!surNamePasswordConfirmPressed) {
+                                    return {"message": "cancelled"};
+                                  }
                                   final data = await ref
                                       .read(
                                         surNameUpdate({
@@ -1137,8 +1183,12 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           return {"message": "timeout"};
                                         },
                                       );
+                                  if (!surNamePasswordConfirmPressed) {
+                                    return {"message": "cancelled"};
+                                  }
 
-                                  if (data["message"] == "success") {
+                                  if (data["message"] == "success" &&
+                                      surNamePasswordConfirmPressed) {
                                     ref.read(userSurname.notifier).state =
                                         surNameHolder.toUpperCase();
                                   }
@@ -1154,7 +1204,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                     );
                                     ;
                                   } else if (snapshot.hasData) {
-                                    // print(snapshot.data);
+                                    print(snapshot.data);
 
                                     if (snapshot.data["message"] == "success" &&
                                         surNameEditMode == true &&
@@ -1190,35 +1240,67 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                       );
                                     } else if (snapshot.data["message"] ==
                                             "incorrect_password" &&
-                                        surNameEditMode == true) {
-                                      ElegantNotification(
-                                        description: Text("Incorrect Password"),
-                                        icon: Icon(Icons.warning),
-                                      ).show(context);
-
+                                        surNameEditMode == true &&
+                                        mounted) {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            ElegantNotification(
+                                              description: Text(
+                                                "Incorrect Password",
+                                              ),
+                                              icon: Icon(Icons.warning),
+                                            ).show(context);
+                                            setState(() {
+                                              surNamePasswordConfirmPressed =
+                                                  false;
+                                            });
+                                            surNamePassowrdController.text = "";
+                                          });
                                       return Icon(
                                         Icons.error,
                                         color: Colors.red,
                                       );
                                     } else if (snapshot.data["message"] ==
                                             "no user" &&
-                                        surNameEditMode == true) {
-                                      ElegantNotification(
-                                        description: Text(
-                                          "Email does not exist; normmaly it is impossible for you to be seeing this notification",
-                                        ),
-                                        icon: Icon(
-                                          Icons.warning,
-                                          color: Colors.red,
-                                        ),
-                                      ).show(context);
+                                        surNameEditMode == true &&
+                                        mounted) {
+                                      WidgetsBinding.instance.addPostFrameCallback((
+                                        _,
+                                      ) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "Email does not exist; normmaly it is impossible for you to be seeing this notification",
+                                          ),
+                                          icon: Icon(
+                                            Icons.warning,
+                                            color: Colors.red,
+                                          ),
+                                        ).show(context);
+                                      });
                                       return Icon(
                                         Icons.error_rounded,
                                         color: Colors.red,
                                       );
                                     } else {
-                                      // print("Calcelled");
-                                      return SizedBox();
+                                      WidgetsBinding.instance.addPostFrameCallback((
+                                        _,
+                                      ) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "${snapshot.data["message"]}\nUpdate Not successful",
+                                          ),
+                                          icon: Icon(
+                                            Icons.notification_important,
+                                          ),
+                                        ).show(context);
+                                        setState(() {
+                                          surNamePasswordConfirmPressed = false;
+                                        });
+                                      });
+                                      return Icon(
+                                        Icons.error,
+                                        color: Colors.red,
+                                      );
                                     }
                                   }
                                   return SizedBox();
