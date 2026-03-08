@@ -598,10 +598,16 @@ final emailUpdate = FutureProvider.family((ref, Map dataToSend) async {
     body: jsonEncode({
       "old_email": dataToSend["old_email"],
       "new_email": dataToSend["new_email"],
+      "password": dataToSend["password"],
     }),
   );
   if (response.statusCode == 200) {
     final Map<String, dynamic> data = await jsonDecode(response.body);
     return data;
   }
+});
+
+final renderHoldUp = StateProvider<int>((ref) {
+  //This is due to the delay of render free tier starting up bullshit
+  return 45;
 });

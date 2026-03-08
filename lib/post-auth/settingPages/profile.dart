@@ -24,8 +24,6 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
     levelController.text = ref.read(userLevel);
   }
 
-  final emailKey = GlobalKey<FormFieldState>();
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final otpBoxController = TextEditingController();
@@ -45,6 +43,8 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
   bool levelEditMode = false; //this is for when the edit mode is active or not
 
   bool emailAskPassword =
+      false; // this is to ask for password from the user to be sure they are the owner of the account
+  bool firstNameAskPassword =
       false; // this is to ask for password from the user to be sure they are the owner of the account
   bool passwordConfirmPressed =
       false; //to check wether the user have pressed the suffix button in the password textformfeild
@@ -77,6 +77,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
 
   @override
   Widget build(BuildContext context) {
+    ref.invalidate(emailValidated);
     final deptWatcher = ref.watch(coursesOfferedSaved);
     final uniWatcher = ref.read(universityNameSaved);
     return Scaffold(
@@ -151,7 +152,6 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                       ),
                       Expanded(
                         child: TextFormField(
-                          key: emailKey,
                           controller: emailController,
                           onChanged: (value) {
                             if (passwordConfirmPressed) {
@@ -159,6 +159,12 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                 passwordConfirmPressed = false;
                               });
                             }
+                            if (emailVerification) {
+                              setState(() {
+                                emailVerification = false;
+                              });
+                            }
+                            ref.invalidate(emailValidated);
                           },
                           style: TextStyle(
                             fontStyle: emailEditMode
@@ -261,6 +267,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           uniEditMode = false;
                                           deptEditMode = false;
                                           levelEditMode = false;
+                                          firstNameAskPassword = false;
                                         }
                                       });
                                     },
@@ -294,6 +301,18 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                   suffix: passwordConfirmPressed
                                       ? FutureBuilder(
                                           future: Future(() async {
+                                            //first thing first, check for password,if it dey valid but before you check , make sure there is no typo in the new email
+                                            if (!emailController.text
+                                                .toLowerCase()
+                                                .contains("@gmail.com")) {
+                                              return [
+                                                {
+                                                  "message":
+                                                      "emailcontroller.text.invalid",
+                                                },
+                                                "emailcontroller.text.invalid",
+                                              ];
+                                            }
                                             final data = await ref
                                                 .refresh(
                                                   passwordChecker({
@@ -305,7 +324,11 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                   }).future,
                                                 )
                                                 .timeout(
-                                                  Duration(seconds: 8),
+                                                  Duration(
+                                                    seconds:
+                                                        8 +
+                                                        ref.read(renderHoldUp),
+                                                  ),
                                                   onTimeout: () {
                                                     return {
                                                       "message":
@@ -323,10 +346,16 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                     }).future,
                                                   )
                                                   .timeout(
-                                                    Duration(seconds: 8),
+                                                    Duration(
+                                                      seconds:
+                                                          8 +
+                                                          ref.read(
+                                                            renderHoldUp,
+                                                          ),
+                                                    ),
                                                     onTimeout: () => {
                                                       "message":
-                                                          "passwordchecker timeout",
+                                                          "email Availability timeout",
                                                     },
                                                   );
                                               if (emailExist["message"] ==
@@ -339,7 +368,13 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                       }).future,
                                                     )
                                                     .timeout(
-                                                      Duration(seconds: 5),
+                                                      Duration(
+                                                        seconds:
+                                                            5 +
+                                                            ref.read(
+                                                              renderHoldUp,
+                                                            ),
+                                                      ),
                                                     );
                                                 return [data, emailExist];
                                               }
@@ -362,8 +397,24 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                               );
                                             } else if (snapshot.hasData) {
                                               print("heyyy ${snapshot.data}");
-
                                               if (snapshot
+                                                      .data?[0]["message"] ==
+                                                  //checking if the user new email is valid before even sendong any request to my server
+                                                  "emailcontroller.text.invalid") {
+                                                WidgetsBinding.instance
+                                                    .addPostFrameCallback((_) {
+                                                      setState(() {
+                                                        passwordConfirmPressed =
+                                                            false;
+                                                      });
+                                                      ElegantNotification(
+                                                        description: Text(
+                                                          "Invalid Email",
+                                                        ),
+                                                        icon: Icon(Icons.info),
+                                                      ).show(context);
+                                                    });
+                                              } else if (snapshot
                                                       .data?[0]["message"] ==
                                                   "correct") {
                                                 if (!emailVerification) {
@@ -465,9 +516,8 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                   color: Colors.red,
                                                 );
                                               }
-                                            } else {
-                                              return SizedBox();
                                             }
+                                            return SizedBox();
                                           },
                                         )
                                       : ElevatedButton(
@@ -522,6 +572,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                 .read(emailValidated.notifier)
                                                 .state =
                                             true;
+
                                         final data = await ref
                                             .refresh(
                                               emailUpdate({
@@ -531,15 +582,24 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                 "new_email": emailController
                                                     .text
                                                     .trim(),
+                                                "password": passwordController
+                                                    .text
+                                                    .trim(),
                                               }).future,
                                             )
-                                            .timeout(Duration(seconds: 8));
-                                        print("hey fam : $data");
-                                        print(
-                                          data != null &&
-                                              data["message"] == "success" &&
-                                              mounted,
-                                        );
+                                            .timeout(
+                                              Duration(
+                                                seconds:
+                                                    8 + ref.read(renderHoldUp),
+                                              ),
+                                            );
+                                        ref.invalidate(emailValidated);
+                                        // print("hey fam : $data");
+                                        // print(
+                                        //   data != null &&
+                                        //       data["message"] == "success" &&
+                                        //       mounted,
+                                        // );
                                         if (data != null &&
                                             data["message"] == "success" &&
                                             mounted) {
@@ -659,15 +719,26 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                               ? [
                                   InkWell(
                                     onTap: () {
-                                      setState(() {
-                                        if (firstNameEditMode) {
-                                          firstNameEditMode = false;
-                                        } else if (!firstNameEditMode) {
+                                      if (firstNameController.text
+                                              .trim()
+                                              .toLowerCase() ==
+                                          ref
+                                              .read(userFirstname)
+                                              .toLowerCase()) {
+                                        ElegantNotification(
+                                          description: Text(
+                                            "No change in First Name dectected",
+                                          ),
+                                          icon: Icon(
+                                            Icons.notification_important,
+                                          ),
+                                        ).show(context);
+                                      } else {
+                                        setState(() {
                                           firstNameEditMode = true;
-                                        }
-                                      });
-
-                                      message(text: "Email Updated");
+                                          firstNameAskPassword = true;
+                                        });
+                                      }
                                     },
                                     child: Icon(Icons.save, color: mainColor),
                                   ),
@@ -676,6 +747,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                       setState(() {
                                         if (firstNameEditMode) {
                                           firstNameEditMode = false;
+                                          firstNameAskPassword = false;
                                         } else if (!firstNameEditMode) {
                                           firstNameEditMode = true;
                                         }
@@ -701,6 +773,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           uniEditMode = false;
                                           deptEditMode = false;
                                           levelEditMode = false;
+                                          firstNameAskPassword = false;
                                         }
                                       });
                                     },
@@ -713,6 +786,27 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                       ),
                     ],
                   ),
+                  //this is not seen as part of the row cos it is depedanr on wether the user want to change their first name or not
+                  AnimatedCrossFade(
+                    firstChild: SizedBox(),
+                    secondChild: TextFormField(
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.lock, color: mainColor),
+                        hintText: "Confirm Password",
+                        suffix: ElevatedButton(
+                          onPressed: () {},
+                          child: Text("Confirm"),
+                        ),
+                      ),
+                    ),
+                    crossFadeState: firstNameAskPassword
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: Duration(milliseconds: 170),
+                    firstCurve: Curves.easeOut,
+                    secondCurve: Curves.easeOut,
+                  ),
+
                   //begining of the third row of editables
                   Row(
                     children: [
@@ -801,6 +895,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                           uniEditMode = false;
                                           deptEditMode = false;
                                           levelEditMode = false;
+                                          firstNameAskPassword = false;
                                         }
                                       });
                                     },
@@ -1041,6 +1136,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                 surNameEditMode = false;
                                                 deptEditMode = false;
                                                 levelEditMode = false;
+                                                firstNameAskPassword = false;
                                               }
                                             });
                                           },
@@ -1061,7 +1157,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                         );
                       },
                       error: (error, Stack) {
-                        print(Stack);
+                        // print(Stack);
                         return SizedBox();
                       },
                       loading: () => SizedBox(),
@@ -1196,6 +1292,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                                                 surNameEditMode = false;
                                                 uniEditMode = false;
                                                 levelEditMode = false;
+                                                firstNameAskPassword = false;
                                               }
                                             });
                                           },
@@ -1216,7 +1313,7 @@ class SettingProfileState extends ConsumerState<SettingProfile> {
                         );
                       },
                       error: (error, stack) {
-                        print(stack);
+                        // print(stack);
                         return SizedBox();
                       },
                       loading: () => SizedBox(),

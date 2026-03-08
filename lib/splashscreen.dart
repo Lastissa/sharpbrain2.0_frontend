@@ -213,7 +213,7 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
                       ref.invalidate(CoursesForEachDeptSaved);
                       ref.invalidate(CoursesForEachDeptSaved);
                       ref.invalidate(userLoginCheck);
-                      return routerInstance.go("/login");
+                      return routerInstance.pop();
                     },
                     child: Text("Retry"),
                   )

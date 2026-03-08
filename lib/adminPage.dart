@@ -82,4 +82,6 @@ class _AdminpageState extends ConsumerState<Adminpage> {
 
 final backendUrl = StateProvider((ref) {
   return 'https://esta-sensate-unquickly.ngrok-free.dev/';
+  // return 'https://las.pythonanywhere.com/aichat/';
+  // return 'https://sharpbrain2-0.onrender.com/';
 });
