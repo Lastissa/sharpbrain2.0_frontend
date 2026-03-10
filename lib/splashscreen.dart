@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sharpbrains/auth/login_page.dart';
@@ -35,7 +34,6 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
   }
 
   late String defaultTextToDisplay;
-  bool takingTooLong = false;
   late double onFired;
   final Color backGround = mainColor;
   Color textColor = Colors.white;
@@ -44,7 +42,6 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
   String messageToDisplayForPostLogin = 'Invalid Credential';
 
   void reroute() async {
-    // onFired = DateTime.now().millisecondsSinceEpoch / 1000;
     final whereToGo = '/${widget.whereToGo}';
     if (widget.wait == null || widget.wait == false)
     //for every other normal splash screen
@@ -52,7 +49,7 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
       await Future.delayed(Duration(seconds: secondsToWait));
       routerInstance.go(whereToGo);
     } else if
-    //for when signup page is clicked and the user is redirected to thw registration page
+    //for when signup page is clicked and the user is redirected to the registration page
     (widget.whereToGo == "registration" && widget.wait == true) {
       await Future.delayed(Duration(milliseconds: 600));
       await ref
@@ -108,7 +105,7 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
     } else if (widget.wait == true && widget.whereToGo == "homepage")
     //when the login button is clicked and the user want to login
     {
-      //check password with the result variable
+      //check password with the result variable , i used this and not the passwordcheck provider cos i need some other info aside just getting a correct or incorrect
       final result = await ref
           .read(
             userLoginCheck({
@@ -183,11 +180,9 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
 
   @override
   Widget build(BuildContext context) {
-    // reroute();
-
     return Scaffold(
       backgroundColor: backGround,
-      body: Container(
+      body: SizedBox(
         width: ref.watch(devicesizeX).w,
         height: ref.watch(devicesizeY).h,
         child: Column(
@@ -230,7 +225,3 @@ class _SplashscreenState extends ConsumerState<Splashscreen> {
     );
   }
 }
-
-// final a = StateProvider((ref) {
-//   return '';
-// });

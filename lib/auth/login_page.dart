@@ -1,13 +1,8 @@
-import 'dart:ffi';
-
-import 'package:elegant_notification/resources/arrays.dart';
-import 'package:elegant_notification/widgets/toast_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -40,12 +35,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
     ref.read(loginPassword.notifier).state = _passwordController.text;
 
     if (_formKey.currentState?.validate() ?? false) {
-      notifier(
-        context: context,
-        duration: Duration(seconds: 2),
-        bg: mainColor,
-        text: '',
-      );
       routerInstance.push('/splashscreenPostLogIn');
     }
   }

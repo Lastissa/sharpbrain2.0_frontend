@@ -424,6 +424,8 @@ final otp = FutureProvider.family((ref, Map datatosend) async {
       ref.read(otpStatus.notifier).state = data['message'];
       ref.read(otpValue.notifier).state = data['otp'];
       return data;
+    } else if (response.statusCode == 404) {
+      ref.read(otpStatus.notifier).state = "";
     } else {
       ref.read(otpStatus.notifier).state =
           'Something went wrong but dont worry, its not you, its us.\nPlease try again';

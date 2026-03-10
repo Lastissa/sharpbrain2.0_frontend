@@ -427,10 +427,10 @@ class _Reg2State extends ConsumerState<Reg2> {
             coreSubList = i['core_subjects'];
             bool present = coreSubList.every(
               (items) => [
-                _firstSubjectChosen,
-                _secondSubjectChosen,
-                _thirdSubjectChosen,
-                _fourthSubjectChosen,
+                _firstSubjectChosen?.toUpperCase(),
+                _secondSubjectChosen?.toUpperCase(),
+                _thirdSubjectChosen?.toUpperCase(),
+                _fourthSubjectChosen?.toUpperCase(),
               ].contains(items),
             );
             if (present) {
@@ -897,7 +897,18 @@ class _Reg2State extends ConsumerState<Reg2> {
                               return Text(
                                 textAlign: TextAlign.center,
                                 snapshot.data.toString().toUpperCase(),
-                                style: TextStyle(fontWeight: FontWeight.w600),
+
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      snapshot.data
+                                              .toString()
+                                              .toLowerCase()
+                                              .trim() ==
+                                          "you have chosen the right subject combination"
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
                               );
                             } else {
                               return Center(
