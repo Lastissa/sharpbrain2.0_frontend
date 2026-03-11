@@ -1,2 +1,16 @@
-# sharpbrain2.0_frontend
-the frontend of sharpbrain2.0 ; an app meant to make university student life easier
+Sharpbrain2.0_frontend
+
+The frontend of sharpbrain2.0 ; an app meant to make university student life easier.
+
+PROPOSED FEATURES:
+* PERSONALIZED AI TUTOR / OPTION FOR HUMAN TUTOR
+* PERSONALIZED COURSS MATERIALS
+* SIMULATED EXAM CENTER BOTH FOR WRITTEN AND CBT
+* PERSONALIZED DETAILED ANALYSIS ON PERFORMANCE
+* COMMUNITIY FOR COMPETITIONS
+* LOCAL DABATASE FOR EXTERNAL MATERIAL IMPORT
+* CGPA CALCULATOR
+
+
+--------------- 
+
